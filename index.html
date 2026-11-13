@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>무드픽 (MoodPic) - AI 사진 분위기 분석기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- 배경 장식 요소 -->
+  <div class="bg-blob blob-1" aria-hidden="true"></div>
+  <div class="bg-blob blob-2" aria-hidden="true"></div>
+  <div class="bg-blob blob-3" aria-hidden="true"></div>
+
+  <main class="container">
+    <!-- 상단 헤더 -->
+    <header class="app-header">
+      <div class="badge-pill">
+        <span class="sparkle">✨</span> AI Photo Vibe Check
+      </div>
+      <h1 class="app-title">내 사진은 어떤 <span class="highlight">분위기</span>일까?</h1>
+      <p class="app-subtitle">
+        컴퓨터나 스마트폰에서 사진을 골라보세요!<br />
+        AI가 사진 속 감성과 무드를 콕 집어 알려드려요 🎨
+      </p>
+    </header>
+
+    <!-- 메인 카드 -->
+    <section class="card" aria-label="사진 업로드 및 AI 분위기 분석">
+      <!-- 숨겨진 파일 입력 (PC & 모바일 갤러리/카메라 호환) -->
+      <input
+        type="file"
+        id="photoInput"
+        accept="image/*"
+        hidden
+      />
+
+      <!-- [단계 1 & 2] 업로드 및 미리보기 화면 -->
+      <div id="uploadStepView">
+        <!-- 1. 업로드 전: 사진 선택 영역 -->
+        <div id="uploadDropzone" class="upload-dropzone" role="button" tabindex="0" aria-label="사진 파일 선택하기">
+          <div class="upload-icon-wrap">
+            <span class="upload-emoji">📸</span>
+            <span class="floating-sticker sticker-1">🌈</span>
+            <span class="floating-sticker sticker-2">💖</span>
+          </div>
+          <h2 class="upload-title">여기를 눌러 사진을 선택하세요!</h2>
+          <p class="upload-desc">
+            클릭하거나 사진을 이곳으로 끌어다 놓으세요 (Drag &amp; Drop)
+          </p>
+          <div class="upload-formats">
+            <span>JPG</span>
+            <span>PNG</span>
+            <span>WEBP</span>
+            <span>HEIC</span>
+          </div>
+          <button type="button" id="selectBtn" class="btn-secondary">
+            📁 기기에서 사진 불러오기
+          </button>
+        </div>
+
+        <!-- 2. 업로드 후: 사진 미리보기 영역 -->
+        <div id="previewSection" class="preview-section hidden">
+          <div class="preview-header">
+            <div class="file-info">
+              <span id="fileBadge" class="file-badge">선택된 사진</span>
+              <span id="fileName" class="file-name">photo.jpg</span>
+            </div>
+            <button type="button" id="changePhotoBtn" class="btn-change" aria-label="다른 사진 선택하기">
+              🔄 다른 사진 고르기
+            </button>
+          </div>
+
+          <div class="preview-frame">
+            <img id="previewImage" src="" alt="업로드한 사진 미리보기" />
+            <!-- 업로드 및 AI 분석 로딩 오버레이 -->
+            <div id="uploadLoadingOverlay" class="upload-loading-overlay hidden" aria-live="polite">
+              <div class="spinner"></div>
+              <p id="loadingOverlayText" class="upload-loading-text">이미지를 업로드하고 있습니다.</p>
+            </div>
+          </div>
+
+          <p id="previewStatusMsg" class="preview-ready-msg">
+            이미지를 업로드하고 있습니다.
+          </p>
+        </div>
+
+        <!-- 하단 액션 영역: AI로 분석하기 버튼 -->
+        <div class="action-area">
+          <button type="button" id="analyzeBtn" class="btn-analyze" disabled>
+            <span id="analyzeBtnIcon" class="btn-icon">🔮</span>
+            <span id="analyzeBtnText" class="btn-text">AI로 분석하기</span>
+          </button>
+          <p id="helperText" class="helper-text">
+            먼저 분석할 사진을 선택하면 버튼이 활성화됩니다 😊
+          </p>
+        </div>
+      </div>
+
+      <!-- [단계 3] AI 분석 결과 화면 -->
+      <div id="resultSection" class="result-section hidden" aria-live="polite">
+        <div class="result-top-bar">
+          <span class="result-badge">✨ AI 분위기 분석 완료</span>
+          <button type="button" id="resetTopBtn" class="btn-change">
+            📸 다른 사진 해보기
+          </button>
+        </div>
+
+        <!-- 분석된 사진 & AI 한줄평 -->
+        <div class="result-hero">
+          <div class="result-photo-wrap">
+            <img id="resultImage" src="" alt="AI가 분석한 사진" />
+          </div>
+          <div class="one-line-box">
+            <span class="quote-badge">💬 AI 한줄평</span>
+            <p id="oneLineReviewText" class="one-line-text"></p>
+          </div>
+        </div>
+
+        <!-- 분위기 키워드 3개 & 재미있는 퍼센트 -->
+        <div class="result-block">
+          <h3 class="result-block-title">🎨 사진 분위기 키워드 TOP 3</h3>
+          <div id="moodList" class="mood-list"></div>
+        </div>
+
+        <!-- 시각적 스타일 포인트 (색상, 배경, 의상, 표정, 구도) -->
+        <div id="stylePointBlock" class="result-block">
+          <h3 class="result-block-title">🔍 스타일 &amp; 무드 디테일</h3>
+          <ul id="stylePointList" class="style-point-list"></ul>
+        </div>
+
+        <!-- 어울리는 해시태그 4개 -->
+        <div class="result-block">
+          <div class="hashtag-header">
+            <h3 class="result-block-title">🏷️ 찰떡 해시태그 추천</h3>
+            <button type="button" id="copyHashtagsBtn" class="btn-copy-tags">
+              📋 태그 복사
+            </button>
+          </div>
+          <div id="hashtagList" class="hashtag-list"></div>
+        </div>
+
+        <!-- 하단 다시하기 버튼 -->
+        <div class="result-actions">
+          <button type="button" id="retryBtn" class="btn-analyze">
+            <span class="btn-icon">🔄</span>
+            <span class="btn-text">다른 사진도 분석해보기</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 알림 토스트 메시지 -->
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
